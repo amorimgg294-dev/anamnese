@@ -2,23 +2,360 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Anamnese Nutricional</title>
 <style>
-:root{--d:#1F5C4D;--m:#2E8B74;--l:#E8F3EF;--e:#C0392B}
-*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F6FAF8;color:#1f2d2a}
-header{background:linear-gradient(135deg,var(--d),var(--m));color:#fff;padding:30px 20px 64px;text-align:center}
-header h1{margin:0 0 4px;font-size:1.6rem}header p{margin:0;opacity:.9;font-size:.95rem}
-.bar{height:8px;background:#ffffff40;border-radius:8px;max-width:600px;margin:20px auto 0;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#fff;transition:width .4s}
-main{max-width:640px;margin:-40px auto 40px;padding:0 14px}
-.card{background:#fff;border-radius:18px;padding:24px 22px;box-shadow:0 8px 28px rgba(31,92,77,.13)}
-h2{margin:0 0 4px;color:var(--d)}.sub{color:#6b7c77;margin:0 0 20px;font-size:.92rem}
-.q{margin:0 0 22px}.q label{display:block;font-weight:600;margin-bottom:4px}.q small{display:block;color:#6b7c77;margin-bottom:8px}
-input,textarea{width:100%;padding:12px;border:1.5px solid #d0d7d4;border-radius:12px;font:inherit;background:#fff}
-input:focus,textarea:focus{outline:none;border-color:var(--m);box-shadow:0 0 0 3px #2E8B7433}
-.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:9px 15px;border:1.5px solid #d0d7d4;border-radius:99px;cursor:pointer;background:#fff;font:inherit;color:inherit;transition:.15s}
-.chip.on{background:var(--m);border-color:var(--m);color:#fff}
-.err{color:var(--e);font-size:.85rem;margin-top:6px}.bad input,.bad textarea{border-color:var(--e)}
-.nav{display:flex;gap:10px;margin-top:6px}.btn{padding:14px 22px;border-radius:12px;border:0;font:inherit;font-weight:700;cursor:pointer}
-.pri{background:var(--d);color:#fff;flex:1}.sec{background:var(--l);color:var(--d)}.btn:disabled{opacity:.6}
-.ok{text-align:center;padding:30px 6px}.ok b{font-size:3rem}
+
+:root {
+  --d: #103f37;
+  --m: #20836b;
+  --l: #eaf5f0;
+  --e: #c0392b;
+  --bg: #f4f8f5;
+  --text: #203a35;
+  --muted: #70837d;
+  --border: #dce7e1;
+  --shadow: 0 24px 70px rgba(16, 63, 55, .10);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font: 16px/1.65 Inter, "Segoe UI", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 10% 15%, #dcefe5 0, transparent 35%),
+    radial-gradient(ellipse at 90% 55%, #e4f2eb 0, transparent 32%),
+    var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+header {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 15% 0%, #ffffff18, transparent 40%),
+    linear-gradient(135deg, #103b33, #176653 60%, #23866c);
+  color: white;
+  padding: 54px 20px 88px;
+  text-align: center;
+}
+
+header::before,
+header::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border: 1px solid #ffffff18;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+header::before {
+  width: 360px;
+  height: 360px;
+  top: -240px;
+  left: -100px;
+}
+
+header::after {
+  width: 420px;
+  height: 420px;
+  right: -250px;
+  bottom: -310px;
+}
+
+header h1 {
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 5vw, 3.15rem);
+  font-weight: 750;
+  letter-spacing: -.055em;
+  line-height: 1.15;
+}
+
+header p {
+  margin: 0;
+  color: #e1f1e9;
+  font-size: 1rem;
+  letter-spacing: .025em;
+}
+
+.bar {
+  height: 7px;
+  background: #ffffff30;
+  border-radius: 99px;
+  max-width: 520px;
+  margin: 30px auto 0;
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #76e5bd, #ffffff);
+  box-shadow: 0 0 16px #8af0cc70;
+  transition: width .5s cubic-bezier(.2, .8, .2, 1);
+}
+
+main {
+  width: min(760px, 100%);
+  margin: -46px auto 48px;
+  padding: 0 20px;
+  position: relative;
+}
+
+.card {
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid #ffffff;
+  border-radius: 26px;
+  padding: clamp(22px, 5vw, 42px);
+  box-shadow: var(--shadow);
+  animation: enter .4s ease both;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+h2 {
+  margin: 0 0 5px;
+  color: var(--d);
+  font-size: clamp(1.55rem, 4vw, 2rem);
+  letter-spacing: -.04em;
+  line-height: 1.3;
+}
+
+.sub {
+  color: var(--muted);
+  margin: 0 0 32px;
+  font-size: .97rem;
+}
+
+.q {
+  margin: 0 0 25px;
+  min-width: 0;
+}
+
+.q label {
+  display: block;
+  font-weight: 650;
+  font-size: .96rem;
+  margin-bottom: 8px;
+  color: #29483f;
+}
+
+.q small {
+  display: block;
+  color: var(--muted);
+  margin: -2px 0 10px;
+  font-size: .87rem;
+  line-height: 1.55;
+}
+
+input,
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 51px;
+  padding: 13px 15px;
+  border: 1.5px solid var(--border);
+  border-radius: 13px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text);
+  background: #fcfefd;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #a0afa9;
+}
+
+input:hover,
+textarea:hover {
+  border-color: #b7d1c4;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--m);
+  background: #fff;
+  box-shadow: 0 0 0 4px #20836b18;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.chip {
+  min-height: 42px;
+  padding: 9px 15px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  background: #fff;
+  font: inherit;
+  font-size: .92rem;
+  color: #3e5b51;
+  transition: background .18s, border-color .18s,
+    color .18s, transform .18s, box-shadow .18s;
+}
+.chip:hover {
+  border-color: var(--m);
+  background: #f1f8f4;
+  transform: translateY(-1px);
+}
+.chip.on {
+  background: var(--d);
+  border-color: var(--d);
+  color: white;
+  box-shadow: 0 4px 12px #103f3720;
+}
+.chip:focus-visible,
+.btn:focus-visible {
+  outline: 3px solid #53b998;
+  outline-offset: 3px;
+}
+.nav {
+  display: flex;
+  gap: 12px;
+  margin-top: 34px;
+  padding-top: 24px;
+  border-top: 1px solid #edf1ee;
+}
+.btn {
+  min-height: 51px;
+  padding: 13px 23px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s,
+    background .2s, border-color .2s;
+}
+.pri {
+  background: linear-gradient(135deg, #103f37, #207b64);
+  color: white;
+  flex: 1;
+  box-shadow: 0 6px 18px #103f3720;
+}
+.pri:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px #103f3730;
+}
+.sec {
+  background: #f1f7f3;
+  color: var(--d);
+  border-color: #dceae2;
+}
+.sec:hover {
+  background: #e5f2e9;
+}
+.btn:active:not(:disabled) {
+  transform: scale(.985);
+}
+.btn:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+.err {
+  color: var(--e);
+  font-size: .86rem;
+  margin-top: 8px;
+}
+.bad input,
+.bad textarea {
+  border-color: var(--e);
+  background: #fffafa;
+}
+.bad .chips {
+  outline: 1px solid #c0392b55;
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+.ok {
+  text-align: center;
+  padding: 42px 8px;
+}
+.ok b {
+  display: inline-grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: #e7f6ed;
+  font-size: 3rem;
+  margin-bottom: 20px;
+  animation: enter .5s ease both;
+}
+.ok p {
+  color: var(--muted);
+  max-width: 440px;
+  margin: 12px auto 0;
+}
+@media (max-width: 520px) {
+  header {
+    padding: 40px 20px 72px;
+  }
+  header h1 {
+    font-size: 2rem;
+  }
+  main {
+    padding: 0 12px;
+    margin-top: -34px;
+  }
+  .card {
+    border-radius: 21px;
+    padding: 24px 18px;
+  }
+  .sub {
+    margin-bottom: 26px;
+  }
+  .q {
+    margin-bottom: 23px;
+  }
+  .chips {
+    gap: 8px;
+  }
+  .chip {
+    padding: 9px 12px;
+  }
+  .nav {
+    gap: 9px;
+  }
+  .btn {
+    padding: 12px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 </style></head><body>
 <header><h1>Anamnese Nutricional</h1><p id="marca"></p><div class="bar"><i id="bar"></i></div></header>
 <main><div class="card" id="app"></div></main>
