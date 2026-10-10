@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anamnese Nutricional</title>
+<style>
+:root{--d:#1F5C4D;--m:#2E8B74;--l:#E8F3EF;--e:#C0392B}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F6FAF8;color:#1f2d2a}
+header{background:linear-gradient(135deg,var(--d),var(--m));color:#fff;padding:30px 20px 64px;text-align:center}
+header h1{margin:0 0 4px;font-size:1.6rem}header p{margin:0;opacity:.9;font-size:.95rem}
+.bar{height:8px;background:#ffffff40;border-radius:8px;max-width:600px;margin:20px auto 0;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#fff;transition:width .4s}
+main{max-width:640px;margin:-40px auto 40px;padding:0 14px}
+.card{background:#fff;border-radius:18px;padding:24px 22px;box-shadow:0 8px 28px rgba(31,92,77,.13)}
+h2{margin:0 0 4px;color:var(--d)}.sub{color:#6b7c77;margin:0 0 20px;font-size:.92rem}
+.q{margin:0 0 22px}.q label{display:block;font-weight:600;margin-bottom:4px}.q small{display:block;color:#6b7c77;margin-bottom:8px}
+input,textarea{width:100%;padding:12px;border:1.5px solid #d0d7d4;border-radius:12px;font:inherit;background:#fff}
+input:focus,textarea:focus{outline:none;border-color:var(--m);box-shadow:0 0 0 3px #2E8B7433}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:9px 15px;border:1.5px solid #d0d7d4;border-radius:99px;cursor:pointer;background:#fff;font:inherit;color:inherit;transition:.15s}
+.chip.on{background:var(--m);border-color:var(--m);color:#fff}
+.err{color:var(--e);font-size:.85rem;margin-top:6px}.bad input,.bad textarea{border-color:var(--e)}
+.nav{display:flex;gap:10px;margin-top:6px}.btn{padding:14px 22px;border-radius:12px;border:0;font:inherit;font-weight:700;cursor:pointer}
+.pri{background:var(--d);color:#fff;flex:1}.sec{background:var(--l);color:var(--d)}.btn:disabled{opacity:.6}
+.ok{text-align:center;padding:30px 6px}.ok b{font-size:3rem}
+</style></head><body>
+<header><h1>Anamnese Nutricional</h1><p id="marca"></p><div class="bar"><i id="bar"></i></div></header>
+<main><div class="card" id="app"></div></main>
+<script>
+const ENDPOINT='https://script.google.com/macros/s/AKfycbyBFauxcR3ocaGXcRMFuVCRO9HN2VVXTF_r_RcWAW4mrWSrVYmxGE3lUohjO4ZD2pPT/exec', Gustavo Amorim ='Seu Nome • Nutrição';
+const FQ=['Nunca','1–2x','3–4x','5–6x','Todo dia'], fq=(k,l)=>({k,l,t:'sel',o:FQ});
+const S=[
+{t:'Sobre você',s:'Para começarmos.',q:[
+ {k:'nome',l:'Nome completo',t:'text',r:1},{k:'nascimento',l:'Data de nascimento',t:'date',r:1},
+ {k:'sexo',l:'Sexo biológico',h:'Usado apenas nas fórmulas de gasto energético.',t:'sel',o:['Feminino','Masculino'],r:1},
+ {k:'whatsapp',l:'WhatsApp (com DDD)',t:'tel',r:1},{k:'profissao',l:'Profissão',t:'text'}]},
+{t:'Suas medidas',s:'Se não souber algum dado, pode deixar em branco.',q:[
+ {k:'peso_kg',l:'Peso atual (kg)',t:'num',min:30,max:300,r:1},{k:'altura_cm',l:'Altura (cm)',t:'num',min:120,max:230,r:1},
+ {k:'peso_max',l:'Maior peso na vida adulta (kg)',t:'num',min:30,max:300},{k:'peso_min',l:'Menor peso na vida adulta (kg)',t:'num',min:30,max:300},
+ {k:'peso_meta',l:'Peso que gostaria de atingir (kg)',t:'num',min:30,max:300,r:1},
+ {k:'cintura_cm',l:'Cintura (cm)',h:'Na altura do umbigo.',t:'num',min:40,max:200},{k:'quadril_cm',l:'Quadril (cm)',h:'Na parte mais larga.',t:'num',min:50,max:220},
+ {k:'pct_gordura',l:'% de gordura corporal',h:'Se fez bioimpedância ou avaliação recentemente.',t:'num',min:3,max:60}]},
+{t:'Seu objetivo',s:'Para onde queremos ir?',q:[
+ {k:'objetivo',l:'Objetivo principal',t:'sel',r:1,o:['Emagrecer','Ganhar massa muscular','Recomposição corporal','Melhorar a saúde e os exames','Melhorar o desempenho esportivo']},
+ {k:'prazo',l:'Em quanto tempo quer ver resultados?',t:'sel',o:['Até 1 mês','Até 3 meses','Até 6 meses','Até 1 ano','Sem pressa']},
+ {k:'motivacao',l:'Motivação hoje (1 a 10)',t:'rng',a:1,b:10},
+ {k:'tentativas',l:'O que já tentou antes e por que não deu certo?',t:'par'},
+ {k:'expectativas',l:'O que você espera do acompanhamento?',t:'par'}]},
+{t:'Saúde',s:'Para que o plano seja seguro para você.',q:[
+ {k:'condicoes',l:'Você tem algum diagnóstico?',t:'chk',r:1,o:['Nenhum','Diabetes','Hipertensão','Colesterol ou triglicerídeos altos','Problemas de tireoide','Resistência à insulina','Doença renal','Gastrite ou refluxo','Outro']},
+ {k:'medicamentos',l:'Medicamentos e suplementos em uso',h:'Escreva "nenhum" se não usa.',t:'par'},
+ {k:'alergias',l:'Alergias ou intolerâncias alimentares',h:'Escreva "nenhuma" se não tem.',t:'par'},
+ {k:'exames',l:'Fez exames de sangue recentemente?',t:'sel',o:['Sim, nos últimos 6 meses','Sim, há mais de 6 meses','Não fiz']},
+ {k:'sono_h',l:'Horas de sono por noite',t:'num',min:1,max:14},{k:'sono_q',l:'Qualidade do sono (1 a 5)',t:'rng',a:1,b:5},
+ {k:'agua_l',l:'Litros de água por dia',t:'num',min:0,max:10}]},
+{t:'Sua rotina',s:'Quanto mais eu conhecer seu dia, mais realista o plano.',q:[
+ {k:'acorda',l:'Que horas você acorda?',t:'time'},{k:'dorme',l:'Que horas você dorme?',t:'time'},
+ {k:'rotina_trab',l:'Como é o seu trabalho?',t:'sel',r:1,o:['Sentada(o) a maior parte do tempo','Em pé, me movimento pouco','Ativo, ando bastante','Esforço físico intenso']},
+ {k:'n_refeicoes',l:'Refeições por dia, hoje',t:'num',min:1,max:10},
+ {k:'cozinha',l:'Quem prepara suas refeições?',t:'chk',o:['Eu mesma(o)','Familiar','Pronto / delivery','Restaurante']},
+ {k:'local_refeicoes',l:'Onde você costuma comer?',t:'chk',o:['Em casa','No trabalho','Na rua','Em movimento']},
+ {k:'tempo_cozinha',l:'Tempo para cozinhar',t:'sel',o:['Pouco (até 20 min)','Médio (20 a 45 min)','Bastante (45+ min)']},
+ {k:'orcamento',l:'Orçamento para alimentação',t:'sel',o:['Enxuto','Médio','Confortável']},
+ {k:'passos',l:'Média de passos por dia',h:'Veja no app de saúde do celular. Se não souber, deixe em branco.',t:'num',min:0,max:40000}]},
+{t:'Atividade física',s:'Entra direto no cálculo do seu gasto energético.',q:[
+ {k:'treina',l:'Você pratica atividade física atualmente?',t:'sel',o:['Sim','Não'],r:1},
+ {k:'modalidade',l:'Quais atividades?',t:'chk',r:1,if:['treina','Sim'],o:['Musculação','Corrida','Caminhada','Ciclismo','Natação','Funcional / CrossFit','Lutas','Esportes coletivos','Pilates / Yoga']},
+ {k:'treino_dias',l:'Dias de treino por semana',t:'num',min:1,max:7,r:1,if:['treina','Sim']},
+ {k:'treino_min',l:'Duração média de cada treino (min)',t:'num',min:10,max:240,r:1,if:['treina','Sim']},
+ {k:'treino_int',l:'Intensidade média (1 a 5)',t:'rng',a:1,b:5,if:['treina','Sim']}]},
+{t:'Hábitos alimentares',s:'A parte mais importante para personalizar seu cardápio.',q:[
+ {k:'recordatorio',l:'Descreva um dia típico da sua alimentação',h:'Refeições, horários e quantidades. Ex.: 7h – 1 pão com ovo e café com leite.',t:'par',r:1}]},
+{t:'Frequência alimentar',s:'Em média, quantas vezes por semana você consome:',q:[
+ fq('freq_frutas','Frutas'),fq('freq_verduras','Verduras e legumes'),fq('freq_carnes','Carnes e ovos'),fq('freq_laticinios','Leite e derivados'),
+ fq('freq_arrozfeijao','Arroz e feijão'),fq('freq_ultra','Ultraprocessados e fast food'),fq('freq_doces','Doces e sobremesas'),fq('freq_bebidas','Refrigerantes e sucos industrializados')]},
+{t:'Preferências',s:'Para um cardápio que você realmente goste de seguir.',q:[
+ {k:'gosta',l:'Alimentos que você adora',t:'par'},{k:'evita',l:'Alimentos que não come de jeito nenhum',t:'par'},
+ {k:'restricoes',l:'Restrição alimentar?',t:'chk',o:['Nenhuma','Vegetariana','Vegana','Sem lactose','Sem glúten','Restrição religiosa']},
+ {k:'alcool',l:'Consumo de álcool',t:'sel',o:['Não bebo','Raramente','Fins de semana','Várias vezes por semana','Todos os dias']},
+ {k:'beliscos',l:'Belisca ou come por ansiedade? (1 a 5)',t:'rng',a:1,b:5},
+ {k:'estilo',l:'Estilo de plano preferido',t:'sel',o:['Flexível, com substituições','Estruturado, com cardápio definido','Cardápio totalmente fechado']}]},
+{t:'Consentimento',s:'Seus dados de saúde são sensíveis e tratados com sigilo.',q:[
+ {k:'consentimento',l:'Autorização',t:'chk',r:1,o:['Autorizo o uso dos meus dados para elaboração do plano alimentar e acompanhamento.']}]}];
+const Q={},D={};let i=0;S.forEach(s=>s.q.forEach(q=>Q[q.k]=q));
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const vis=q=>!q.if||D[q.if[0]]===q.if[1];
+function field(q){const v=D[q.k];let h;
+ if(['text','tel','date','time'].includes(q.t))h=`<input type="${q.t}" data-k="${q.k}" value="${esc(v)}">`;
+ else if(q.t=='num')h=`<input type="number" inputmode="decimal" step="any" data-k="${q.k}" value="${esc(v)}">`;
+ else if(q.t=='par')h=`<textarea rows="4" data-k="${q.k}">${esc(v)}</textarea>`;
+ else{const o=q.t=='rng'?Array.from({length:q.b-q.a+1},(_,j)=>q.a+j):q.o;
+  h='<div class="chips">'+o.map(x=>`<button type="button" class="chip${(q.t=='chk'?(v||[]).includes(x):v==x)?' on':''}" data-k="${q.k}" data-v="${esc(x)}">${esc(x)}</button>`).join('')+'</div>'}
+ return `<div class="q" id="q-${q.k}"><label>${q.l}${q.r?' *':''}</label>${q.h?`<small>${q.h}</small>`:''}${h}</div>`}
+function render(){const s=S[i],y=scrollY;
+ $('#app').innerHTML=`<h2>${s.t}</h2><p class="sub">${s.s||''}</p>${s.q.filter(vis).map(field).join('')}<div class="nav">${i?'<button class="btn sec" id="bk">Voltar</button>':''}<button class="btn pri" id="nx">${i==S.length-1?'Enviar':'Continuar'}</button></div>`;
+ $('#bar').style.width=(i/S.length*100)+'%';scrollTo(0,y)}
+function ok(){let bad=null;document.querySelectorAll('.err').forEach(e=>e.remove());document.querySelectorAll('.bad').forEach(e=>e.classList.remove('bad'));
+ S[i].q.filter(vis).forEach(q=>{const v=D[q.k],emp=v===undefined||v===''||(Array.isArray(v)&&!v.length);let m='';
+  if(q.r&&emp)m='Resposta obrigatória.';else if(q.t=='num'&&!emp&&(v<q.min||v>q.max))m=`Informe um valor entre ${q.min} e ${q.max}.`;
+  if(m){const el=$('#q-'+q.k);el.classList.add('bad');el.insertAdjacentHTML('beforeend',`<div class="err">${m}</div>`);bad=bad||el}});
+ if(bad)bad.scrollIntoView({behavior:'smooth',block:'center'});return !bad}
+async function send(){const b=$('#nx');b.disabled=true;b.textContent='Enviando…';const P={};
+ Object.keys(Q).forEach(k=>{const v=vis(Q[k])?D[k]:'';P[k]=Array.isArray(v)?v.join(', '):(v??'')});
+ try{await fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(P)});
+  $('#bar').style.width='100%';$('#app').innerHTML=`<div class="ok"><b>💚</b><h2>Recebi tudo!</h2><p>Obrigado, ${esc(String(D.nome).split(' ')[0])}. Vou analisar suas respostas e entro em contato em breve.</p></div>`}
+ catch(_){b.disabled=false;b.textContent='Enviar';alert('Não consegui enviar. Verifique a conexão e tente de novo.')}}
+document.addEventListener('click',e=>{const c=e.target.closest('.chip');
+ if(c){const k=c.dataset.k,q=Q[k],x=q.t=='rng'?+c.dataset.v:c.dataset.v;
+  if(q.t=='chk'){const a=D[k]||[];D[k]=a.includes(x)?a.filter(y=>y!=x):[...a,x]}else D[k]=x;render();return}
+ if(e.target.id=='bk'){i--;render();scrollTo(0,0)}
+ if(e.target.id=='nx'&&ok()){if(i<S.length-1){i++;render();scrollTo(0,0)}else send()}});
+document.addEventListener('input',e=>{const k=e.target.dataset.k;if(k)D[k]=Q[k].t=='num'&&e.target.value!==''?+e.target.value:e.target.value});
+$('#marca').textContent=MARCA;render();
+</script></body></html>
