@@ -146,7 +146,34 @@ function pedir(msg,det){$('#hn').innerHTML='Meu <em>plano</em>';$('#app').innerH
  const c=new URLSearchParams(location.search).get('c');
  if(!c)return pedir('Acesse o seu plano');
  $('#app').innerHTML='<div class="card sk" style="margin-top:34px"><div class="sp"></div>Carregando o seu plano…</div>';
- try{let D;if(c=='demo')D=DEMO;else{const t=await (await fetch(ENDPOINT+'?c='+encodeURIComponent(c))).text();try{D=JSON.parse(t)}catch(_){throw new Error('formato')}}
+ try {
+  let D;
+
+  if (c === 'demo') {
+    D = DEMO;
+  } else {
+    D = await new Promise((resolve, reject) => {
+      const callback = 'receberPlano';
+      const script = document.createElement('script');
+
+      window[callback] = (dados) => {
+        delete window[callback];
+        script.remove();
+        resolve(dados);
+      };
+
+      script.onerror = () => {
+        delete window[callback];
+        script.remove();
+        reject(new Error('conexao'));
+      };
+
+      script.src = ENDPOINT + '?codigo=' +
+        encodeURIComponent(c) + '&callback=' + callback;
+
+      document.body.appendChild(script);
+    });
+  }
   if(D.erro||!D.m)return pedir('Não encontramos esse código');render(D)}
  catch(e){pedir('Não foi possível carregar agora',e.message=='formato'?'o servidor respondeu em formato inesperado (o Apps Script pode estar numa versão antiga, sem acesso público, ou o endereço da implantação está diferente).':'falha de conexão com o servidor (endereço incorreto ou acesso bloqueado).')}})();
 </script></body></html>
