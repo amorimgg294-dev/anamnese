@@ -141,12 +141,12 @@ function cnt(e){const t=+e.dataset.n,d=+e.dataset.d||0,s=e.dataset.s||'';if(isNa
 function spy(){let c='resumo';document.querySelectorAll('section').forEach(s=>{if(s.getBoundingClientRect().top<160)c=s.id});tab(c)}
 addEventListener('scroll',spy,{passive:true});
 function tab(id){document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')=='#'+id))}
-function pedir(msg){$('#hn').innerHTML='Meu <em>plano</em>';$('#app').innerHTML=`<div class="card sk" style="margin-top:34px"><h2 style="margin-bottom:8px">${msg}</h2><p>Use o link que o seu nutricionista enviou ou digite o seu código abaixo.</p><div class="cod"><input id="cd" placeholder="Seu código de acesso"><button class="btn pri" style="min-width:0" onclick="location.search='?c='+encodeURIComponent($('#cd').value.trim())">Entrar</button></div></div>`}
+function pedir(msg,det){$('#hn').innerHTML='Meu <em>plano</em>';$('#app').innerHTML=`<div class="card sk" style="margin-top:34px"><h2 style="margin-bottom:8px">${msg}</h2><p>Use o link que a sua nutricionista enviou ou digite o seu código abaixo.</p>${det?`<p style="font-size:.78rem;margin-top:10px">Detalhe técnico: ${det}</p>`:''}<div class="cod"><input id="cd" placeholder="Seu código de acesso"><button class="btn pri" style="min-width:0" onclick="location.search='?c='+encodeURIComponent($('#cd').value.trim())">Entrar</button></div></div>`}
 (async()=>{$('#tabs').innerHTML='<a href="#resumo" class="on">Resumo</a><a href="#dieta">Minha dieta</a><a href="#evolucao">Evolução</a>';
  const c=new URLSearchParams(location.search).get('c');
  if(!c)return pedir('Acesse o seu plano');
  $('#app').innerHTML='<div class="card sk" style="margin-top:34px"><div class="sp"></div>Carregando o seu plano…</div>';
- try{const D=c=='demo'?DEMO:await (await fetch(ENDPOINT+'?c='+encodeURIComponent(c))).json();
+ try{let D;if(c=='demo')D=DEMO;else{const t=await (await fetch(ENDPOINT+'?c='+encodeURIComponent(c))).text();try{D=JSON.parse(t)}catch(_){throw new Error('formato')}}
   if(D.erro||!D.m)return pedir('Não encontramos esse código');render(D)}
- catch(_){pedir('Não foi possível carregar agora')}})();
+ catch(e){pedir('Não foi possível carregar agora',e.message=='formato'?'o servidor respondeu em formato inesperado (o Apps Script pode estar numa versão antiga, sem acesso público, ou o endereço da implantação está diferente).':'falha de conexão com o servidor (endereço incorreto ou acesso bloqueado).')}})();
 </script></body></html>
