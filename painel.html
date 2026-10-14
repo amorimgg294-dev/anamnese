@@ -142,38 +142,24 @@ function spy(){let c='resumo';document.querySelectorAll('section').forEach(s=>{i
 addEventListener('scroll',spy,{passive:true});
 function tab(id){document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')=='#'+id))}
 function pedir(msg,det){$('#hn').innerHTML='Meu <em>plano</em>';$('#app').innerHTML=`<div class="card sk" style="margin-top:34px"><h2 style="margin-bottom:8px">${msg}</h2><p>Use o link que a sua nutricionista enviou ou digite o seu código abaixo.</p>${det?`<p style="font-size:.78rem;margin-top:10px">Detalhe técnico: ${det}</p>`:''}<div class="cod"><input id="cd" placeholder="Seu código de acesso"><button class="btn pri" style="min-width:0" onclick="location.search='?c='+encodeURIComponent($('#cd').value.trim())">Entrar</button></div></div>`}
-(async()=>{$('#tabs').innerHTML='<a href="#resumo" class="on">Resumo</a><a href="#dieta">Minha dieta</a><a href="#evolucao">Evolução</a>';
+async function buscar(c){
+ try{const t=await (await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({acao:'painel',c})})).text();return JSON.parse(t)}
+ catch(_){return viaIframe(c)}}
+function viaIframe(c){return new Promise((res,rej)=>{
+ const nome='gaf'+Date.now(),f=document.createElement('iframe'),fm=document.createElement('form');
+ f.name=nome;f.style.display='none';fm.method='POST';fm.action=ENDPOINT;fm.target=nome;fm.style.display='none';
+ [['acao','painel'],['c',c]].forEach(([k,v])=>{const i=document.createElement('input');i.name=k;i.value=v;fm.appendChild(i)});
+ const fim=()=>{clearTimeout(t);removeEventListener('message',ouvir);f.remove();fm.remove()};
+ const ouvir=e=>{let h='';try{h=new URL(e.origin).hostname}catch(_){}
+  if(e.data&&e.data.tipo==='plano'&&(/googleusercontent\.com$/.test(h)||h==='script.google.com')){fim();res(e.data.dados)}};
+ const t=setTimeout(()=>{fim();rej(new Error('tempo'))},15000);
+ addEventListener('message',ouvir);document.body.append(f,fm);fm.submit()})}
+(async()=>{if(WHATS)document.querySelector('.foot p').insertAdjacentHTML('afterend',`<a class="btn pri" style="margin-top:18px;height:48px;min-width:0" target="_blank" rel="noopener" href="https://wa.me/${WHATS}?text=${encodeURIComponent('Olá! Tenho uma dúvida sobre o meu plano.')}">💬 Falar com o Gustavo</a>`);
+ $('#tabs').innerHTML='<a href="#resumo" class="on">Resumo</a><a href="#dieta">Minha dieta</a><a href="#evolucao">Evolução</a>';
  const c=new URLSearchParams(location.search).get('c');
  if(!c)return pedir('Acesse o seu plano');
  $('#app').innerHTML='<div class="card sk" style="margin-top:34px"><div class="sp"></div>Carregando o seu plano…</div>';
- try {
-  let D;
-
-  if (c === 'demo') {
-    D = DEMO;
-  } else {
-    D = await new Promise((resolve, reject) => {
-      const callback = 'receberPlano';
-      const script = document.createElement('script');
-
-      window[callback] = (dados) => {
-        delete window[callback];
-        script.remove();
-        resolve(dados);
-      };
-
-      script.onerror = () => {
-        delete window[callback];
-        script.remove();
-        reject(new Error('conexao'));
-      };
-
-      script.src = ENDPOINT + '?codigo=' +
-        encodeURIComponent(c) + '&callback=' + callback;
-
-      document.body.appendChild(script);
-    });
-  }
-  if(D.erro||!D.m)return pedir('Não encontramos esse código');render(D)}
- catch(e){pedir('Não foi possível carregar agora',e.message=='formato'?'o servidor respondeu em formato inesperado (o Apps Script pode estar numa versão antiga, sem acesso público, ou o endereço da implantação está diferente).':'falha de conexão com o servidor (endereço incorreto ou acesso bloqueado).')}})();
+ try{let D;if(c=='demo')D=DEMO;else{D=await buscar(c);}
+  if(D.erro||!D.m)return pedir(D.erro=='falha'?'Erro ao ler a planilha':'Não encontramos esse código',D.erro=='falha'?D.detalhe:'');render(D)}
+ catch(e){pedir('Não foi possível carregar agora',e.message=='tempo'?'o servidor não respondeu a tempo (a implantação do Apps Script pode não estar pública, com acesso "Qualquer pessoa", ou estar numa versão antiga).':'falha ao carregar os dados.')}})();
 </script></body></html>
